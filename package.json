@@ -1,0 +1,33 @@
+{
+  "name": "@maniajs/gbxparser",
+  "version": "0.0.0",
+  "description": "ManiaPlanet GBX File Parser.",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maniajs/maniajs-gbxparser.git"
+  },
+  "keywords": [
+    "maniaplanet",
+    "gbx",
+    "gbxparser",
+    "parser",
+    "trackmania",
+    "shootmania"
+  ],
+  "author": "Tom Valk <tomvalk@lt-box.info>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/maniajs/maniajs-gbxparser/issues"
+  },
+  "homepage": "https://github.com/maniajs/maniajs-gbxparser#readme",
+  "devDependencies": {
+    "babel-cli": "^6.5.1",
+    "babel-preset-es2015": "^6.5.0",
+    "babel-preset-stage-0": "^6.5.0",
+    "eslint": "^2.2.0"
+  }
+}
