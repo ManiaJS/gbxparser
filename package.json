@@ -4,7 +4,10 @@
   "description": "ManiaPlanet GBX File Parser.",
   "main": "lib/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "babel src -d lib --copy-files",
+    "dev": "babel-node src/index.js",
+    "test": "npm run build && node node_modules/mocha/bin/mocha",
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -28,6 +31,8 @@
     "babel-cli": "^6.5.1",
     "babel-preset-es2015": "^6.5.0",
     "babel-preset-stage-0": "^6.5.0",
-    "eslint": "^2.2.0"
+    "chai": "^3.5.0",
+    "eslint": "^2.2.0",
+    "mocha": "^2.4.5"
   }
 }
