@@ -13,7 +13,7 @@ import Map from './map';
  * @type {MapParser}
  *
  * @property {BufferReader} parser
- * @property {{parts:string[]}} options
+ * @property {{thumb:boolean}} options
  */
 export default class MapParser extends EventEmitter {
   options;
@@ -23,28 +23,16 @@ export default class MapParser extends EventEmitter {
   debug;
   map = new Map();
 
-  // Parts to parse (reference part to chunk).
-  _parts = {
-    'basic':   ['50606082','50606083','50606088'], // author, uid, times, game, title, etc.
-    'header':  ['50606085'], // xml.
-    'thumb':   ['50606087']  // jpg image + comments.
-  };
-  _chunkPart = { // Reversed
-    '50606082': 'basic', '50606083': 'basic', '50606088': 'basic',
-    '50606085': 'header',
-    '50606087': 'thumb'
-  };
-
   /**
    * Parse Map File.
    * @param {string|Buffer} fd Could be a file (string) or a buffer.
-   * @param {{parts:string[]}} [options] Provide extra options, for example parts to parse. Could be 'basic', 'header' (xml), 'thumb'..
+   * @param {{thumb:boolean}} [options] Provide extra options, Turn thumb off/on.
    */
   constructor (fd, options) {
     super();
 
     options = options || {};
-    options.parts = options.parts || ['basic', 'header', 'thumb']; // All by default.
+    options.thumb = typeof options.thumb === 'undefined' ? true : options.thumb; // Parse thumb by default!
     this.options = options;
 
     if (fd instanceof Buffer) {
@@ -82,9 +70,8 @@ export default class MapParser extends EventEmitter {
           if (classId !== ((0x3 << 24) | (0x43 << 12))) { // engineid << 24, classid << 12.
             return reject(new Error('Map is not a valid map class!'));
           }
-          return this._parseParts(this.options.parts);
+          return this._parseParts();
         } catch (err) {
-          console.log(err);
           return reject(err);
         }
       }).then(() => {
@@ -97,11 +84,10 @@ export default class MapParser extends EventEmitter {
 
   /**
    * Parse Header and contents (in parts).
-   * @param {[string]} parts Parts to parse.
    * @returns {Promise}
    * @private
    */
-  _parseParts (parts) {
+  _parseParts () {
     let headerLength = this.parser.nextUInt32LE();
     let chunkCount = this.parser.nextUInt32LE();
     let chunkInfos = {};
@@ -127,19 +113,18 @@ export default class MapParser extends EventEmitter {
    * @private
    */
   _parseChunk (id, size) {
-    // Check if we want to skip this one..
-    if (! this._chunkPart[id] || this.options.parts.indexOf(this._chunkPart[id]) === -1) {
-      this.parser.move(size);
-      return Promise.resolve(); // Skip
-    }
-
     switch (id) {
       case '50606082': // 0x03043002
         return this._parseC1(size);
       case '50606083': // 0x03043003
         return this._parseC2(size);
+      case '50606084': // 0x03043004
+        return this._parseC3(size);
       default:
-        return Promise.resolve();
+        try {
+          this.parser.move(size); // Skip by default (when not found).
+          return Promise.resolve();
+        }catch(err) {return Promise.reject(err);}
     }
   }
 
@@ -222,6 +207,25 @@ export default class MapParser extends EventEmitter {
 
       this.map.title = this.parser.nextLookBackString();
 
+      return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+
+  /**
+   * Parse Chunk 3. (skip)
+   * Chunk '50606084' (0x03043004)
+   *
+   * @param size
+   * @returns {Promise}
+   * @private
+   */
+  _parseC3 (size) {
+    try {
+      let version = this.parser.nextUInt8();
+      if (typeof this.debug === 'function') this.debug(`Chunk (0x03043004), Version: ${version}`);
+      this.parser.move(size-1);
       return Promise.resolve();
     } catch (err) {
       return Promise.reject(err);

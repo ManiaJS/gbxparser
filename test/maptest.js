@@ -14,6 +14,10 @@ describe('Map parsing of \'greyroad\'', function() {
     // Parse file.
     it('should parse file successfully', function (done) {
       parser = new MapParser(__dirname + '/greyroad.Map.Gbx');
+
+      // Enable for debug:
+      // parser.debug = console.log;
+      
       parser.parse().then((_map) => {
         map = _map;
         done();
