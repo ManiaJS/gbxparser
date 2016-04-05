@@ -9,10 +9,7 @@
     "test": "npm run build && node node_modules/mocha/bin/mocha",
     "prepublish": "npm run build"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/maniajs/maniajs-gbxparser.git"
-  },
+  "repository": "https://github.com/ManiaJS/gbxparser.git",
   "keywords": [
     "maniaplanet",
     "gbx",
