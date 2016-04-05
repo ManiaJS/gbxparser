@@ -122,6 +122,8 @@ export default class MapParser extends EventEmitter {
         return this._parseC3(size);
       case '50606085': // 0x03043005
         return this._parseC4(size);
+      case '50606087': // 0x03043007
+        return this._parseC5(size);
       default:
         try {
           this.parser.move(size); // Skip by default (when not found).
@@ -246,6 +248,45 @@ export default class MapParser extends EventEmitter {
     try {
       if (typeof this.debug === 'function') this.debug(`Chunk (0x03043005)`);
       this.map.xml = this.parser.nextGbxString();
+      return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+
+  /**
+   * Parse Chunk 5. Thumb + Comment
+   * Chunk '50606087' (0x03043007)
+   *
+   * @param size
+   * @returns {Promise}
+   * @private
+   */
+  _parseC5 (size) {
+    try {
+      if (typeof this.debug === 'function') this.debug(`Chunk (0x03043007)`);
+      if (this.parser.nextUInt32LE() === 1) { // Has Thumb.
+        let thumbSize = this.parser.nextUInt32LE();
+        this.parser.move(15); // Begin thumb xml tag
+        if (this.options.thumb) {
+          this.map.thumb = this.parser.nextBuffer(thumbSize);
+        } else {
+          this.parser.move(thumbSize);
+        }
+
+        this.parser.move(16); // </Thumbnail.jpg>
+        this.parser.move(10); // <Comments>
+
+        let commentSize = this.parser.nextUInt32LE();
+        this.map.comment = '';
+        if (commentSize > 0) {
+          this.map.comment = this.parser.nextString(commentSize);
+        }
+
+        this.parser.move(11); // </Comments>
+      } else {
+        this.parser.move(size - 4);
+      }
       return Promise.resolve();
     } catch (err) {
       return Promise.reject(err);

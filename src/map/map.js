@@ -25,6 +25,7 @@
  * @property {string} xml
  *
  * @property {Buffer} thumb
+ * @property {string} comment
  *
  * @property {{version:number,login:string,nickname:string,zone:string,extra:string}} author
  */
@@ -50,7 +51,7 @@ export default class Map {
   xml;
 
   thumb;
-  comments;
+  comment;
 
   author = {}; // version, login, nick, zone, extra.
 }

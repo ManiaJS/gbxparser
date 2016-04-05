@@ -17,7 +17,7 @@ describe('Map parsing of \'greyroad\'', function() {
 
       // Enable for debug:
       // parser.debug = console.log;
-      
+
       parser.parse().then((_map) => {
         map = _map;
         done();
@@ -67,5 +67,16 @@ describe('Map parsing of \'greyroad\'', function() {
       expect(map.mapType).to.equal('Trackmania\\Race');
       expect(map.style).to.equal('');
     });
+
+    // ===
+    // todo: xml
+
+
+    // ===
+    it('should have the correct jpg and comment', function () {
+      expect(map.thumb.length).to.equal(27803);
+      expect(map.comment).to.equal('');
+    });
+
   });
 });
