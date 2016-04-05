@@ -5,14 +5,15 @@
 
 let BufferReader = require('buffer-reader');
 
-BufferReader.prototype.nextGbxString = function () {
+BufferReader.prototype.nextGbxString = function () { // [len] [string...(until len reached)]
   let len = this.nextUInt32LE();
   return this.nextString(len);
 };
 
-BufferReader.prototype.nextLookBackString = function () {
+BufferReader.prototype.nextLookBackString = function () { // Lookback Baguette
   if (! this.lookbackSeen) {
-    console.log('Init lookback registry, version of LBS: ' + this.nextUInt32LE());
+    let version = this.nextUInt32LE();
+    // console.log('Init lookback registry, version of LBS: ' + version);
     this.lookbackSeen = true;
     this.lookbackStore = [];
   }

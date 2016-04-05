@@ -7,7 +7,7 @@ var expect = require('chai').expect;
 
 
 describe('Map parsing of \'greyroad\'', function() {
-  describe('basic chunk', function (done) {
+  describe('header chunks', function (done) {
     var parser;
     var map;
 
@@ -47,6 +47,21 @@ describe('Map parsing of \'greyroad\'', function() {
 
 
     // ===
-    
+    it('should have the correct uid, name and author login', function () {
+      expect(map.uid).to.equal('46Yh0hgv5EdSb6IkHsYK1PXHaua');
+      expect(map.name).to.equal('$s$678$oGrey$o$fff road');
+      expect(map.author.login).to.equal('tomvalk');
+    });
+
+    it('should have the correct environment and title', function () {
+      expect(map.environment).to.equal('Canyon');
+      expect(map.title).to.equal('TMCanyon');
+    });
+
+    it('should have the correct mood, mapType and style', function () {
+      expect(map.mood).to.equal('Sunrise');
+      expect(map.mapType).to.equal('Trackmania\\Race');
+      expect(map.style).to.equal('');
+    });
   });
 });
