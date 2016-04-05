@@ -120,6 +120,8 @@ export default class MapParser extends EventEmitter {
         return this._parseC2(size);
       case '50606084': // 0x03043004
         return this._parseC3(size);
+      case '50606085': // 0x03043005
+        return this._parseC4(size);
       default:
         try {
           this.parser.move(size); // Skip by default (when not found).
@@ -226,6 +228,24 @@ export default class MapParser extends EventEmitter {
       let version = this.parser.nextUInt8();
       if (typeof this.debug === 'function') this.debug(`Chunk (0x03043004), Version: ${version}`);
       this.parser.move(size-1);
+      return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+
+  /**
+   * Parse Chunk 4. Header XML
+   * Chunk '50606085' (0x03043005)
+   *
+   * @param size
+   * @returns {Promise}
+   * @private
+   */
+  _parseC4 (size) {
+    try {
+      if (typeof this.debug === 'function') this.debug(`Chunk (0x03043005)`);
+      this.map.xml = this.parser.nextGbxString();
       return Promise.resolve();
     } catch (err) {
       return Promise.reject(err);
