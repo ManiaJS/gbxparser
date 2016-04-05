@@ -78,5 +78,13 @@ describe('Map parsing of \'greyroad\'', function() {
       expect(map.comment).to.equal('');
     });
 
+    // ===
+    it('should have the correct author extra\'s', function () {
+      expect(map.author.login).to.equal('tomvalk');
+      expect(map.author.version).to.equal(0);
+      expect(map.author.nickname).to.equal('$f80$i$s$o$h[maniaflash?toffe]Toffe$z$06fSmurf');
+      expect(map.author.extra).to.equal('');
+    });
+
   });
 });

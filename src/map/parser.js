@@ -124,6 +124,8 @@ export default class MapParser extends EventEmitter {
         return this._parseC4(size);
       case '50606087': // 0x03043007
         return this._parseC5(size);
+      case '50606088': // 0x03043008
+        return this._parseC6(size);
       default:
         try {
           this.parser.move(size); // Skip by default (when not found).
@@ -287,6 +289,31 @@ export default class MapParser extends EventEmitter {
       } else {
         this.parser.move(size - 4);
       }
+      return Promise.resolve();
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+
+  /**
+   * Parse Chunk 6. Author information.
+   * Chunk '50606088' (0x03043008)
+   *
+   * @param size
+   * @returns {Promise}
+   * @private
+   */
+  _parseC6 (size) {
+    try {
+      let version = this.parser.nextUInt32LE();
+      if (typeof this.debug === 'function') this.debug(`Chunk (0x03043008), Version: ${version}`);
+
+      this.map.author.version = this.parser.nextUInt32LE();
+      this.map.author.login = this.parser.nextGbxString();
+      this.map.author.nickname = this.parser.nextGbxString();
+      this.map.author.zone = this.parser.nextGbxString();
+      this.map.author.extra = this.parser.nextGbxString();
+
       return Promise.resolve();
     } catch (err) {
       return Promise.reject(err);
