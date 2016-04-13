@@ -141,6 +141,9 @@ export default class MapParser extends EventEmitter {
    * @private
    */
   _parseChunk (id, size) {
+    // Clear Lookback
+    this.parser.resetLookBackStrings();
+
     switch (id) {
       // ======== HEADER =========
       case '50606082': // 0x03043002

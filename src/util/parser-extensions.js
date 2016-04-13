@@ -47,3 +47,10 @@ BufferReader.prototype.nextLookBackString = function () { // Lookback Baguette
   }
   return this.lookbackStore[inp-1];
 };
+
+BufferReader.prototype.resetLookBackStrings = function () {
+  if (this.lookbackSeen) {
+    this.lookbackStore = [];
+    this.lookbackSeen = false;
+  }
+};
