@@ -28,7 +28,7 @@ BufferReader.prototype.nextLookBackString = function () { // Lookback Baguette
     this.lookbackStore.push(str);
     return str;
   }
-  if (inp === -1) return '';
+  if (inp === 0xffffffff) return '';
 
   if ((inp & 0x3fffffff) === inp) {
     switch (inp) { // The string could be in the predefined libary...
@@ -43,7 +43,7 @@ BufferReader.prototype.nextLookBackString = function () { // Lookback Baguette
   }
   inp &= 0x3fffffff;
   if (inp-1 >= this.lookbackStore.length) {
-    throw new Error('String not found in lookback list!');
+    throw new Error('String not found in lookback list!. Offset: ' + this.tell());
   }
   return this.lookbackStore[inp-1];
 };

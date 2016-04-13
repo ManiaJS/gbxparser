@@ -6,6 +6,29 @@ var should = require('chai').should();
 var expect = require('chai').expect;
 
 
+describe('Map parsing of \'tb\'', function () {
+  describe('header chunks', function (done) {
+    var parser;
+    var map;
+
+    // Parse file.
+    it('should parse file successfully', function (done) {
+      parser = new MapParser(__dirname + '/tb.Map.Gbx');
+
+      // Enable for debug:
+      parser.debug = console.log;
+
+      parser.parse().then((_map) => {
+        map = _map;
+        done();
+      }, (err) => {
+        done(err);
+      });
+    });
+  });
+});
+
+
 describe('Map parsing of \'greyroad\'', function() {
   describe('header chunks', function (done) {
     var parser;
