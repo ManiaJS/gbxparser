@@ -26,13 +26,14 @@ export default class MapParser extends EventEmitter {
   /**
    * Parse Map File.
    * @param {string|Buffer} fd Could be a file (string) or a buffer.
-   * @param {{thumb:boolean}} [options] Provide extra options, Turn thumb off/on.
+   * @param {{thumb:boolean, body:boolean}} [options] Provide extra options, Turn thumb off/on.. Turn body parsing off/on.
    */
   constructor (fd, options) {
     super();
 
     options = options || {};
     options.thumb = typeof options.thumb === 'undefined' ? true : options.thumb; // Parse thumb by default!
+    options.body = typeof options.body === 'undefined' ? true : options.body; // Parse thumb by default!
     this.options = options;
 
     if (fd instanceof Buffer) {
@@ -70,11 +71,18 @@ export default class MapParser extends EventEmitter {
           if (classId !== ((0x3 << 24) | (0x43 << 12))) { // engineid << 24, classid << 12.
             return reject(new Error('Map is not a valid map class!'));
           }
-          return this._parseParts();
+          return this._parseHeader();
         } catch (err) {
           return reject(err);
         }
       }).then(() => {
+        // Parse body
+        if (this.options.body) {
+          return this._parseBody();
+        }
+        return Promise.resolve();
+      }).then(() => {
+        // Done, return resolving with the map object.
         return resolve(this.map);
       }).catch((err) => {
         return reject(err);
@@ -83,25 +91,45 @@ export default class MapParser extends EventEmitter {
   }
 
   /**
-   * Parse Header and contents (in parts).
+   * Parse Header.
    * @returns {Promise}
    * @private
    */
-  _parseParts () {
+  _parseHeader () {
     let headerLength = this.parser.nextUInt32LE();
     let chunkCount = this.parser.nextUInt32LE();
-    let chunkInfos = {};
+    let headerChunks = {};
 
     // Parse chunks (extract from header).
     for (var chunkNr = 0; chunkNr < chunkCount; chunkNr++) {
-      chunkInfos[this.parser.nextUInt32LE()] = this.parser.nextUInt32LE() & ~0x80000000;
+      headerChunks[this.parser.nextUInt32LE()] = this.parser.nextUInt32LE() & ~0x80000000;
     }
 
-    return Object.keys(chunkInfos).reduce((promise, chunkId) => {
+    return Object.keys(headerChunks).reduce((promise, chunkId) => {
       return promise.then(() => {
-        return this._parseChunk(chunkId, chunkInfos[chunkId]);
+        return this._parseChunk(chunkId, headerChunks[chunkId]);
       });
     }, Promise.resolve());
+  }
+
+
+  /**
+   * Parse Body (data section).
+   * @returns {Promise}
+   * @private
+   */
+  _parseBody () {
+    return Promise.resolve(); // Not implemented.
+
+    let instanceCount = this.parser.nextUInt32LE();
+    let externalInstanceCount = this.parser.nextUInt32LE();
+
+    if (externalInstanceCount !== 0) {
+      return Promise.reject('Body parsing failed, external instances and dependencies not implemented in the parser!');
+    }
+
+    // TODO: Implement body parsing.
+    // TODO: LZO decompression.
   }
 
   /**
@@ -114,6 +142,7 @@ export default class MapParser extends EventEmitter {
    */
   _parseChunk (id, size) {
     switch (id) {
+      // ======== HEADER =========
       case '50606082': // 0x03043002
         return this._parseC1(size);
       case '50606083': // 0x03043003
@@ -126,6 +155,8 @@ export default class MapParser extends EventEmitter {
         return this._parseC5(size);
       case '50606088': // 0x03043008
         return this._parseC6(size);
+      // ========= DATA ===========
+
       default:
         try {
           this.parser.move(size); // Skip by default (when not found).
@@ -146,7 +177,7 @@ export default class MapParser extends EventEmitter {
    * @returns {Promise}
    * @private
    */
-  _parseC1 (size) {
+  _parseC1 (size) { // Header
     try {
       let version = this.parser.nextUInt8();
       if (typeof this.debug === 'function') this.debug(`Chunk (0x03043002), Version: ${version}`);
@@ -160,7 +191,7 @@ export default class MapParser extends EventEmitter {
 
       this.map.price = this.parser.nextUInt32LE();
       this.map.isMultilap = this.parser.nextUInt32LE() === 1;
-      this.map.type = this.parser.nextUInt32LE(); // TODO: Parse type into string type.
+      this.map.type = this.parser.nextUInt32LE();
 
       this.parser.move(4);
 
@@ -187,7 +218,7 @@ export default class MapParser extends EventEmitter {
    * @returns {Promise}
    * @private
    */
-  _parseC2 (size) {
+  _parseC2 (size) { // Header
     try {
       let version = this.parser.nextUInt8();
       if (typeof this.debug === 'function') this.debug(`Chunk (0x03043003), Version: ${version}`);
@@ -227,7 +258,7 @@ export default class MapParser extends EventEmitter {
    * @returns {Promise}
    * @private
    */
-  _parseC3 (size) {
+  _parseC3 (size) { // Header
     try {
       let version = this.parser.nextUInt8();
       if (typeof this.debug === 'function') this.debug(`Chunk (0x03043004), Version: ${version}`);
@@ -246,7 +277,7 @@ export default class MapParser extends EventEmitter {
    * @returns {Promise}
    * @private
    */
-  _parseC4 (size) {
+  _parseC4 (size) { // Header
     try {
       if (typeof this.debug === 'function') this.debug(`Chunk (0x03043005)`);
       this.map.xml = this.parser.nextGbxString();
@@ -264,7 +295,7 @@ export default class MapParser extends EventEmitter {
    * @returns {Promise}
    * @private
    */
-  _parseC5 (size) {
+  _parseC5 (size) { // Header
     try {
       if (typeof this.debug === 'function') this.debug(`Chunk (0x03043007)`);
       if (this.parser.nextUInt32LE() === 1) { // Has Thumb.
@@ -303,7 +334,7 @@ export default class MapParser extends EventEmitter {
    * @returns {Promise}
    * @private
    */
-  _parseC6 (size) {
+  _parseC6 (size) { // Header
     try {
       let version = this.parser.nextUInt32LE();
       if (typeof this.debug === 'function') this.debug(`Chunk (0x03043008), Version: ${version}`);
